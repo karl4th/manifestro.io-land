@@ -146,7 +146,7 @@ export default function Home() {
       {/* Language switcher */}
       <button
         onClick={toggleLocale}
-        className="absolute right-6 top-6 z-50 flex items-center gap-2 border-b border-transparent pb-0.5 text-sm font-medium text-zinc-500 transition-all hover:border-zinc-900 hover:text-zinc-900"
+        className="absolute right-6 top-6 z-50 flex items-center gap-2 rounded-none border border-zinc-300 bg-white/80 px-4 py-2 text-sm font-medium text-zinc-700 backdrop-blur-sm transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white"
       >
         <Globe className="h-4 w-4" />
         {t.language.switch}
@@ -154,97 +154,124 @@ export default function Home() {
 
       {/* Main content */}
       <main className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 py-20">
-        {/* Logo */}
-        <div className="mb-16 animate-fade-in">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-900">
-              <Brain className="h-6 w-6 text-white" />
+        {/* Logo with glitch effect on hover */}
+        <div 
+          className="group mb-12 animate-fade-in cursor-default"
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+        >
+          <div className="flex items-center gap-4">
+            <div className="relative flex h-14 w-14 items-center justify-center bg-zinc-900 transition-transform duration-300 group-hover:rotate-12">
+              <Brain className="h-7 w-7 text-white" />
+              {/* Corner accents */}
+              <div className="absolute -right-1 -top-1 h-2 w-2 bg-zinc-900" />
+              <div className="absolute -bottom-1 -left-1 h-2 w-2 bg-zinc-900" />
             </div>
-            <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 md:text-3xl">
-              manifestro
-            </h2>
+            <div className="relative">
+              <h2 className={`text-3xl font-bold tracking-tighter text-zinc-900 md:text-4xl ${isHovering ? 'animate-glitch' : ''}`}>
+                MANIFESTRO
+              </h2>
+              <div className="absolute -bottom-1 left-0 h-0.5 w-0 bg-zinc-900 transition-all duration-500 group-hover:w-full" />
+            </div>
           </div>
         </div>
 
-        {/* Badge */}
-        <div className="mb-10 animate-fade-in-up">
-          <span className="inline-flex items-center gap-2 rounded-full border border-zinc-900 px-4 py-2 text-xs font-medium uppercase tracking-widest text-zinc-900">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-zinc-900" />
-            {t.hero.badge}
-          </span>
+        {/* Status indicator */}
+        <div className="mb-8 animate-fade-in-up">
+          <div className="flex items-center gap-3 text-sm">
+            <span className="relative flex h-3 w-3">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-zinc-900 opacity-75" />
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-zinc-900" />
+            </span>
+            <span className="font-mono uppercase tracking-[0.2em] text-zinc-600">
+              {t.hero.badge}
+            </span>
+          </div>
         </div>
 
-        {/* Main heading */}
+        {/* Main heading - split design */}
         <div className="mb-8 animate-fade-in-up text-center delay-100">
-          <h1 className="text-5xl font-bold leading-[1.1] tracking-tight md:text-7xl lg:text-8xl">
-            <span className="block">{t.hero.title}</span>
-            <span className="block text-zinc-400">{t.hero.titleHighlight}</span>
+          <h1 className="relative text-6xl font-black leading-[0.9] tracking-tighter md:text-8xl lg:text-9xl">
+            <span className="block text-zinc-900">{t.hero.title}</span>
+            <span className="relative block">
+              <span className="text-zinc-300">{t.hero.titleHighlight}</span>
+              {/* Strikethrough accent */}
+              <div className="absolute left-1/2 top-1/2 h-1 w-0 -translate-x-1/2 -translate-y-1/2 bg-zinc-900 transition-all duration-1000 hover:w-full" />
+            </span>
           </h1>
         </div>
 
-        {/* Description */}
-        <p className="mb-14 max-w-xl animate-fade-in-up text-center text-lg leading-relaxed text-zinc-500 delay-200 md:text-xl">
-          {t.hero.description}
-        </p>
+        {/* Description with accent */}
+        <div className="relative mb-12 max-w-lg animate-fade-in-up delay-200">
+          <div className="absolute -left-4 top-0 h-full w-1 bg-zinc-200" />
+          <p className="pl-4 text-center text-lg leading-relaxed text-zinc-500 sm:text-left md:text-xl">
+            {t.hero.description}
+          </p>
+        </div>
 
-        {/* Email form */}
-        <div className="mb-20 w-full max-w-md animate-fade-in-up delay-300">
+        {/* Email form - brutalist style */}
+        <div className="mb-16 w-full max-w-lg animate-fade-in-up delay-300">
           {!isSubmitted ? (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t.hero.placeholder}
-                className="flex-1 border-b-2 border-zinc-200 bg-transparent px-1 py-4 text-zinc-900 placeholder-zinc-400 transition-all focus:border-zinc-900 focus:outline-none"
-                required
-              />
-              <button
-                type="submit"
-                className="group flex items-center justify-center gap-2 bg-zinc-900 px-8 py-4 font-medium text-white transition-all hover:bg-zinc-800"
-              >
-                {t.hero.cta}
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </button>
+            <form onSubmit={handleSubmit} className="relative">
+              <div className="flex flex-col gap-0 sm:flex-row">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t.hero.placeholder}
+                  className="flex-1 border-2 border-zinc-900 bg-white px-6 py-5 text-zinc-900 placeholder-zinc-400 transition-all focus:outline-none focus:ring-0"
+                  required
+                />
+                <button
+                  type="submit"
+                  className="group relative flex items-center justify-center gap-2 border-2 border-zinc-900 bg-zinc-900 px-8 py-5 font-bold uppercase tracking-wider text-white transition-all hover:bg-white hover:text-zinc-900 sm:-ml-0.5"
+                >
+                  {t.hero.cta}
+                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-2" />
+                </button>
+              </div>
+              {/* Decorative corner */}
+              <div className="absolute -bottom-2 -right-2 h-4 w-4 border-b-2 border-r-2 border-zinc-300" />
             </form>
           ) : (
-            <div className="border-l-4 border-zinc-900 bg-zinc-50 p-6">
-              <p className="text-lg font-medium text-zinc-900">
-                {locale === "en" ? "You're on the list." : "Вы в списке."}
+            <div className="relative border-2 border-zinc-900 bg-white p-8">
+              <div className="absolute -left-3 -top-3 flex h-6 w-6 items-center justify-center bg-zinc-900 text-xs font-bold text-white">
+                ✓
+              </div>
+              <p className="text-xl font-bold text-zinc-900">
+                {locale === "en" ? "You're in." : "Вы в деле."}
               </p>
-              <p className="mt-1 text-sm text-zinc-500">
+              <p className="mt-2 text-zinc-500">
                 {locale === "en"
-                  ? "We'll be in touch."
-                  : "Мы свяжемся с вами."}
+                  ? "We'll reach out when we're ready."
+                  : "Мы свяжемся, когда будем готовы."}
               </p>
             </div>
           )}
         </div>
 
-        {/* Feature badges */}
-        <div className="flex animate-fade-in-up flex-wrap justify-center gap-8 delay-500">
-          <div className="flex items-center gap-3">
-            <Cpu className="h-5 w-5 text-zinc-400" />
-            <span className="text-sm font-medium text-zinc-600">{t.features.ai}</span>
+        {/* Stats/Features - more impactful */}
+        <div className="grid animate-fade-in-up grid-cols-3 gap-8 delay-500 md:gap-16">
+          <div className="text-center">
+            <Cpu className="mx-auto mb-3 h-6 w-6 text-zinc-900" />
+            <div className="text-xs font-bold uppercase tracking-widest text-zinc-600">{t.features.ai}</div>
           </div>
-          <div className="h-6 w-px bg-zinc-200" />
-          <div className="flex items-center gap-3">
-            <Network className="h-5 w-5 text-zinc-400" />
-            <span className="text-sm font-medium text-zinc-600">{t.features.innovation}</span>
+          <div className="text-center">
+            <Network className="mx-auto mb-3 h-6 w-6 text-zinc-900" />
+            <div className="text-xs font-bold uppercase tracking-widest text-zinc-600">{t.features.innovation}</div>
           </div>
-          <div className="h-6 w-px bg-zinc-200" />
-          <div className="flex items-center gap-3">
-            <Brain className="h-5 w-5 text-zinc-400" />
-            <span className="text-sm font-medium text-zinc-600">{t.features.future}</span>
+          <div className="text-center">
+            <Brain className="mx-auto mb-3 h-6 w-6 text-zinc-900" />
+            <div className="text-xs font-bold uppercase tracking-widest text-zinc-600">{t.features.future}</div>
           </div>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="absolute bottom-0 left-0 right-0 z-10">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row">
-          <p className="text-sm text-zinc-400">{t.footer.copyright}</p>
-          <p className="text-sm text-zinc-400">{t.footer.building}</p>
+      {/* Footer - minimal */}
+      <footer className="absolute bottom-0 left-0 right-0 z-10 border-t border-zinc-200">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-6 sm:flex-row">
+          <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">{t.footer.copyright}</p>
+          <p className="font-mono text-xs uppercase tracking-widest text-zinc-400">{t.footer.building}</p>
         </div>
       </footer>
     </div>
