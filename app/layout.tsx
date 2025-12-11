@@ -14,11 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Manifestro — AI-Powered Future is Coming",
+  title: "Manifestro — The End of Human-Dependent Sales",
   description:
-    "Manifestro is building the next generation of AI solutions. Something powerful is on the way. Stay tuned for the revolution.",
+    "No more slow replies. No more missed leads. No more human error. Manifestro replaces the weakest link in business: people.",
   keywords:
-    "AI, artificial intelligence, machine learning, startup, innovation, technology, future, manifestro",
+    "AI sales, sales automation, AI assistant, lead generation, sales AI, no human error, automated sales, manifestro",
   authors: [{ name: "Manifestro" }],
   creator: "Manifestro",
   publisher: "Manifestro",
@@ -36,15 +36,15 @@ export const metadata: Metadata = {
     alternateLocale: "ru_RU",
     url: "https://manifestro.io",
     siteName: "Manifestro",
-    title: "Manifestro — AI-Powered Future is Coming",
+    title: "Manifestro — The End of Human-Dependent Sales",
     description:
-      "Manifestro is building the next generation of AI solutions. Something powerful is on the way.",
+      "No more slow replies. No more missed leads. No more human error. Manifestro replaces the weakest link in business.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Manifestro — AI-Powered Future is Coming",
+    title: "Manifestro — The End of Human-Dependent Sales",
     description:
-      "Manifestro is building the next generation of AI solutions. Something powerful is on the way.",
+      "No more slow replies. No more missed leads. No more human error. Manifestro replaces the weakest link in business.",
   },
   metadataBase: new URL("https://manifestro.io"),
 };

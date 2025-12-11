@@ -5,29 +5,33 @@ export const defaultLocale: Locale = "en";
 export const dictionaries = {
   en: {
     meta: {
-      title: "Manifestro — AI-Powered Future is Coming",
+      title: "Manifestro — The End of Human-Dependent Sales",
       description:
-        "Manifestro is building the next generation of AI solutions. Something powerful is on the way. Stay tuned for the revolution.",
+        "No more slow replies. No more missed leads. No more human error. Manifestro replaces the weakest link in business: people.",
       keywords:
-        "AI, artificial intelligence, machine learning, startup, innovation, technology, future, manifestro",
+        "AI sales, sales automation, AI assistant, lead generation, sales AI, no human error, automated sales, manifestro",
     },
     hero: {
-      badge: "Something Big is Coming",
-      title: "The Future of AI",
-      titleHighlight: "Starts Here",
-      description:
-        "We're crafting something extraordinary. An AI revolution that will transform the way you work, create, and think.",
-      cta: "Get Notified",
+      badge: "Coming Soon",
+      title: "The End of Human-Dependent Sales",
+      subtitle: [
+        "No more slow replies.",
+        "No more missed leads.",
+        "No more human error.",
+      ],
+      description: "Manifestro replaces the weakest link in business: people.",
+      ctaLabel: "Be the first to experience the shift.",
+      cta: "Subscribe",
       placeholder: "Enter your email",
     },
     features: {
       ai: "AI-Powered",
-      innovation: "Innovation",
-      future: "Future-Ready",
+      speed: "24/7 Instant",
+      accuracy: "Zero Errors",
     },
     footer: {
-      copyright: "© 2025 Manifestro. All rights reserved.",
-      building: "Building the future with AI",
+      copyright: "© 2024 Manifestro. All rights reserved.",
+      building: "Replacing humans, one sale at a time",
     },
     language: {
       switch: "RU",
@@ -35,29 +39,33 @@ export const dictionaries = {
   },
   ru: {
     meta: {
-      title: "Manifestro — Будущее с ИИ уже близко",
+      title: "Manifestro — Конец продаж, зависящих от людей",
       description:
-        "Manifestro создаёт решения нового поколения на базе искусственного интеллекта. Что-то мощное уже на подходе. Следите за революцией.",
+        "Больше никаких медленных ответов. Никаких упущенных лидов. Никаких человеческих ошибок. Manifestro заменяет слабое звено в бизнесе: людей.",
       keywords:
-        "ИИ, искусственный интеллект, машинное обучение, стартап, инновации, технологии, будущее, manifestro",
+        "ИИ продажи, автоматизация продаж, ИИ ассистент, генерация лидов, AI продажи, без ошибок, автоматические продажи, manifestro",
     },
     hero: {
-      badge: "Что-то Грандиозное Приближается",
-      title: "Будущее ИИ",
-      titleHighlight: "Начинается Здесь",
-      description:
-        "Мы создаём нечто экстраординарное. ИИ-революция, которая изменит то, как вы работаете, творите и мыслите.",
-      cta: "Узнать Первым",
+      badge: "Скоро",
+      title: "Конец продаж, зависящих от людей",
+      subtitle: [
+        "Больше никаких медленных ответов.",
+        "Никаких упущенных лидов.",
+        "Никаких человеческих ошибок.",
+      ],
+      description: "Manifestro заменяет слабое звено в бизнесе: людей.",
+      ctaLabel: "Будь первым, кто испытает перемены.",
+      cta: "Подписаться",
       placeholder: "Введите ваш email",
     },
     features: {
       ai: "На базе ИИ",
-      innovation: "Инновации",
-      future: "Готов к Будущему",
+      speed: "24/7 Мгновенно",
+      accuracy: "Ноль Ошибок",
     },
     footer: {
-      copyright: "© 2025 Manifestro. Все права защищены.",
-      building: "Строим будущее с ИИ",
+      copyright: "© 2024 Manifestro. Все права защищены.",
+      building: "Заменяем людей, продажа за продажей",
     },
     language: {
       switch: "EN",
