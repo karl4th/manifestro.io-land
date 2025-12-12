@@ -18,9 +18,9 @@ export function Navbar() {
   ];
 
   const languages = [
-    { code: "ru" as const, label: "Русский", flag: "🇷🇺" },
-    { code: "en" as const, label: "English", flag: "🇺🇸" },
     { code: "kk" as const, label: "Қазақша", flag: "🇰🇿" },
+    { code: "en" as const, label: "English", flag: "🇺🇸" },
+    { code: "ru" as const, label: "Русский", flag: "🇷🇺" },
   ];
 
   return (
