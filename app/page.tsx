@@ -117,7 +117,10 @@ export default function Home() {
   };
 
   const toggleLocale = () => {
-    setLocale(locale === "en" ? "ru" : "en");
+    const localeOrder = ["en", "ru", "kk"] as const;
+    const currentIndex = localeOrder.indexOf(locale as "en" | "ru" | "kk");
+    const nextIndex = (currentIndex + 1) % localeOrder.length;
+    setLocale(localeOrder[nextIndex]);
   };
 
   return (
