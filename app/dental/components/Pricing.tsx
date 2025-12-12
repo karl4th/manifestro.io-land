@@ -1,177 +1,148 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { Container, SectionHeading, Button } from "./ui";
-import { Check, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Container, Button } from "./ui";
+import { Check, Sparkles, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDentalI18n } from "@/lib/i18n";
 
-const plans = [
-  {
-    name: "Start",
-    price: "49 000",
-    period: "месяц",
-    description: "Для небольших клиник",
-    features: [
-      "До 300 диалогов в месяц",
-      "Ответы в WhatsApp 24/7",
-      "Базовая консультация по услугам",
-      "Запись на приём",
-      "Email поддержка",
-    ],
-    popular: false,
-  },
-  {
-    name: "Grow",
-    price: "99 000",
-    period: "месяц",
-    description: "Для растущих клиник",
-    features: [
-      "До 1000 диалогов в месяц",
-      "Всё из тарифа Start",
-      "Расширенная консультация",
-      "Follow-up и напоминания",
-      "Приоритетная поддержка",
-      "Аналитика диалогов",
-    ],
-    popular: true,
-  },
-  {
-    name: "Scale",
-    price: "199 000",
-    period: "месяц",
-    description: "Для сетей клиник",
-    features: [
-      "Безлимит диалогов",
-      "Всё из тарифа Grow",
-      "Кастомные сценарии",
-      "Интеграция с CRM",
-      "Персональный менеджер",
-      "SLA 99.9%",
-    ],
-    popular: false,
-  },
+const planColors = [
+  "from-zinc-500 to-zinc-600",
+  "from-teal-500 to-cyan-500",
+  "from-purple-500 to-pink-500",
 ];
 
 export function Pricing() {
-  const [isVisible, setIsVisible] = useState(false);
-  const [hoveredPlan, setHoveredPlan] = useState<string | null>(null);
-  const sectionRef = useRef<HTMLElement>(null);
+  const { dictionary: t } = useDentalI18n();
+  const plans = t.pricing.plans;
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setIsVisible(true);
-      },
-      { threshold: 0.2 }
-    );
-    if (sectionRef.current) observer.observe(sectionRef.current);
-    return () => observer.disconnect();
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 15,
+        y: (e.clientY / window.innerHeight - 0.5) * 15,
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   return (
-    <section ref={sectionRef} id="pricing" className="py-20 md:py-32 bg-white relative overflow-hidden">
-      {/* Decorative */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-gradient-to-b from-teal-50 to-transparent rounded-full blur-3xl opacity-50" />
+    <section id="pricing" className="py-24 md:py-32 bg-gradient-to-b from-zinc-50 to-white relative overflow-hidden">
+      {/* Floating gradient orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div
+          className="absolute top-20 -right-20 w-[400px] h-[400px] bg-gradient-to-br from-teal-100/40 to-cyan-100/40 rounded-full blur-3xl transition-transform duration-1000"
+          style={{ transform: `translate(${mousePosition.x * 0.3}px, ${mousePosition.y * 0.3}px)` }}
+        />
+        <div
+          className="absolute -bottom-20 -left-20 w-[300px] h-[300px] bg-gradient-to-tr from-purple-100/30 to-pink-100/30 rounded-full blur-3xl transition-transform duration-1000"
+          style={{ transform: `translate(${-mousePosition.x * 0.2}px, ${-mousePosition.y * 0.2}px)` }}
+        />
+      </div>
 
       <Container className="relative">
-        <div className={cn(
-          "transition-all duration-1000",
-          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-        )}>
-          <SectionHeading
-            badge="Тарифы"
-            title="Простые и понятные цены"
-            description="Один дополнительный пациент полностью окупает месяц работы системы"
-          />
+        {/* Header */}
+        <div className="max-w-3xl mx-auto text-center mb-16">
+          <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-teal-500/10 to-cyan-500/10 border border-teal-200/50 px-4 py-1.5 text-sm font-medium text-teal-700 mb-6">
+            <CreditCard className="w-4 h-4" />
+            {t.pricing.badge}
+          </div>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-zinc-900 tracking-tight mb-6">
+            {t.pricing.title}{" "}
+            <span className="relative">
+              <span className="relative z-10 bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
+                {t.pricing.titleHighlight}
+              </span>
+              <span className="absolute -bottom-1 left-0 right-0 h-2 bg-gradient-to-r from-teal-200 to-cyan-200 -skew-x-3 -z-0" />
+            </span>
+            {" "}{t.pricing.titleEnd}
+          </h2>
+          <p className="text-lg text-zinc-600 leading-relaxed">
+            {t.pricing.description}
+          </p>
         </div>
 
-        <div className="mt-16 grid md:grid-cols-3 gap-8">
-          {plans.map((plan, i) => (
-            <div
-              key={plan.name}
-              onMouseEnter={() => setHoveredPlan(plan.name)}
-              onMouseLeave={() => setHoveredPlan(null)}
-              className={cn(
-                "relative p-8 rounded-2xl border-2 transition-all duration-500 cursor-default",
-                plan.popular
-                  ? "border-teal-600 bg-gradient-to-b from-teal-50/50 to-white scale-105 shadow-xl shadow-teal-100/50"
-                  : "border-zinc-100 bg-white hover:border-teal-200 hover:shadow-lg",
-                !plan.popular && hoveredPlan === plan.name && "scale-[1.02] -translate-y-1",
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-              )}
-              style={{ transitionDelay: `${i * 150}ms` }}
-            >
-              {plan.popular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-teal-600 text-white text-sm font-medium rounded-full flex items-center gap-1.5 shadow-lg">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Популярный
-                </span>
-              )}
-
-              <div className="text-center mb-8">
-                <h3 className="text-xl font-semibold text-zinc-900 mb-2">
-                  {plan.name}
-                </h3>
-                <p className="text-sm text-zinc-500 mb-4">{plan.description}</p>
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className={cn(
-                    "text-4xl font-bold transition-colors",
-                    plan.popular ? "text-teal-700" : "text-zinc-900"
-                  )}>
-                    {plan.price}
-                  </span>
-                  <span className="text-zinc-500">₸/{plan.period}</span>
-                </div>
-              </div>
-
-              <ul className="space-y-4 mb-8">
-                {plan.features.map((feature, fi) => (
-                  <li
-                    key={feature}
-                    className={cn(
-                      "flex items-start gap-3 transition-all duration-300",
-                      isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
-                    )}
-                    style={{ transitionDelay: `${i * 150 + fi * 50}ms` }}
-                  >
-                    <div className={cn(
-                      "w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors",
-                      plan.popular ? "bg-teal-100" : "bg-zinc-100"
-                    )}>
-                      <Check className={cn(
-                        "w-3 h-3",
-                        plan.popular ? "text-teal-600" : "text-zinc-600"
-                      )} />
-                    </div>
-                    <span className="text-sm text-zinc-600">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Button
-                variant={plan.popular ? "primary" : "outline"}
+        <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+          {plans.map((plan, i) => {
+            const isPopular = i === 1;
+            const color = planColors[i];
+            return (
+              <div
+                key={plan.name}
                 className={cn(
-                  "w-full transition-all duration-300",
-                  plan.popular && "shadow-lg shadow-teal-600/25 hover:shadow-xl hover:shadow-teal-600/30"
+                  "group relative p-6 lg:p-8 rounded-2xl border bg-white transition-all duration-500",
+                  isPopular
+                    ? "border-teal-200 shadow-xl shadow-teal-100/50 scale-105 z-10"
+                    : "border-zinc-100 hover:border-zinc-200 hover:shadow-lg"
                 )}
               >
-                Начать бесплатно
-              </Button>
-            </div>
-          ))}
+                {isPopular && "popular" in plan && (
+                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 px-4 py-2 bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-sm font-semibold rounded-full shadow-lg flex items-center gap-1.5 z-20">
+                    <Sparkles className="w-4 h-4" />
+                    {plan.popular}
+                  </div>
+                )}
+
+                {/* Gradient line on top for popular */}
+                {isPopular && (
+                  <div className="absolute top-0 left-6 right-6 h-0.5 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full" />
+                )}
+
+                <div className="text-center mb-8">
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center mx-auto mb-4 shadow-lg`}>
+                    <span className="text-white text-lg font-bold">{plan.name[0]}</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-zinc-900 mb-1">
+                    {plan.name}
+                  </h3>
+                  <p className="text-sm text-zinc-500 mb-4">{plan.description}</p>
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-4xl font-bold text-zinc-900">
+                      {plan.price}
+                    </span>
+                    <span className="text-zinc-500">₸/{plan.period}</span>
+                  </div>
+                </div>
+
+                <ul className="space-y-3 mb-8">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-3">
+                      <div className={cn(
+                        "w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5",
+                        isPopular ? "bg-teal-100" : "bg-zinc-100"
+                      )}>
+                        <Check className={cn(
+                          "w-3 h-3",
+                          isPopular ? "text-teal-600" : "text-zinc-500"
+                        )} />
+                      </div>
+                      <span className="text-sm text-zinc-600">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button
+                  variant={isPopular ? "primary" : "outline"}
+                  className={cn(
+                    "w-full",
+                    isPopular && "shadow-lg shadow-teal-500/25"
+                  )}
+                >
+                  {t.pricing.cta}
+                </Button>
+              </div>
+            );
+          })}
         </div>
 
-        {/* Trial CTA */}
-        <div className={cn(
-          "mt-12 text-center transition-all duration-1000 delay-500",
-          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-        )}>
+        <div className="mt-12 text-center">
           <p className="text-zinc-500">
-            Не уверены? Попробуйте{" "}
-            <span className="font-semibold text-teal-600 underline decoration-teal-200 underline-offset-4 hover:decoration-teal-400 transition-colors cursor-pointer">
-              14 дней бесплатного пилота
-            </span>{" "}
-            без обязательств
+            {t.pricing.trial}{" "}
+            <span className="font-semibold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
+              {t.pricing.trialHighlight}
+            </span>
           </p>
         </div>
       </Container>

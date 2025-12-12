@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DentalI18nProvider } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "Manifestro Dental — AI-ассистент для стоматологий",
@@ -28,5 +29,5 @@ export default function DentalLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return <DentalI18nProvider>{children}</DentalI18nProvider>;
 }

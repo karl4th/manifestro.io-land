@@ -1,24 +1,28 @@
+"use client";
+
 import Link from "next/link";
 import { Container } from "./ui";
-
-const footerLinks = {
-  product: [
-    { label: "Возможности", href: "#features" },
-    { label: "Тарифы", href: "#pricing" },
-    { label: "FAQ", href: "#faq" },
-  ],
-  company: [
-    { label: "О нас", href: "/about" },
-    { label: "Блог", href: "/blog" },
-    { label: "Контакты", href: "/contact" },
-  ],
-  legal: [
-    { label: "Политика конфиденциальности", href: "/privacy" },
-    { label: "Условия использования", href: "/terms" },
-  ],
-};
+import { useDentalI18n } from "@/lib/i18n";
 
 export function Footer() {
+  const { dictionary: t } = useDentalI18n();
+
+  const footerLinks = {
+    product: [
+      { label: t.footer.links.features, href: "#features" },
+      { label: t.footer.links.pricing, href: "#pricing" },
+      { label: t.footer.links.faq, href: "#faq" },
+    ],
+    company: [
+      { label: t.footer.links.about, href: "/about" },
+      { label: t.footer.links.contact, href: "/contact" },
+    ],
+    legal: [
+      { label: t.footer.links.privacy, href: "/privacy" },
+      { label: t.footer.links.terms, href: "/terms" },
+    ],
+  };
+
   return (
     <footer className="bg-zinc-900 text-white py-16">
       <Container>
@@ -34,13 +38,13 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-sm text-zinc-400 leading-relaxed">
-              AI-ассистент для стоматологий. Отвечает, консультирует и записывает пациентов 24/7.
+              {t.footer.description}
             </p>
           </div>
 
           {/* Links */}
           <div>
-            <h4 className="font-semibold mb-4">Продукт</h4>
+            <h4 className="font-semibold mb-4">{t.footer.product}</h4>
             <ul className="space-y-3">
               {footerLinks.product.map((link) => (
                 <li key={link.href}>
@@ -56,7 +60,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Компания</h4>
+            <h4 className="font-semibold mb-4">{t.footer.company}</h4>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.href}>
@@ -72,7 +76,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Правовая информация</h4>
+            <h4 className="font-semibold mb-4">{t.footer.legal}</h4>
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.href}>
@@ -91,7 +95,7 @@ export function Footer() {
         {/* Bottom */}
         <div className="pt-8 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-zinc-500">
-            © 2024 Manifestro. Все права защищены.
+            {t.footer.copyright}
           </p>
           <div className="flex items-center gap-6">
             <a

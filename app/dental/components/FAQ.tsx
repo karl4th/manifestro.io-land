@@ -1,47 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Container, SectionHeading } from "./ui";
-import { ChevronDown } from "lucide-react";
+import { Container } from "./ui";
+import { ChevronDown, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const faqs = [
-  {
-    question: "Это бот?",
-    answer:
-      "Нет, это не бот с кнопками и меню. Manifestro — это автономный AI-агент, который понимает смысл сообщений, различает симптомы и намерения, ведёт живой диалог как обученный администратор.",
-  },
-  {
-    question: "Как быстро подключается?",
-    answer:
-      "Подключение занимает 24-48 часов. Мы настраиваем систему под ваши услуги, цены и расписание врачей. После этого Manifestro готов к работе.",
-  },
-  {
-    question: "Опасно ли отдавать чат ИИ?",
-    answer:
-      "Все диалоги доступны в удобной панели — вы видите каждый шаг и при желании можете вмешаться в любой момент. Система обучена на медицинских сценариях и не даёт медицинских рекомендаций.",
-  },
-  {
-    question: "Как он знает наши услуги?",
-    answer:
-      "Перед запуском мы загружаем информацию о ваших услугах, ценах, врачах и расписании. Система адаптируется под вашу клинику и отвечает точно по вашим данным.",
-  },
-  {
-    question: "Что если клиент спросит сложный вопрос?",
-    answer:
-      "Если вопрос выходит за рамки компетенции системы, она корректно передаст диалог администратору или предложит пациенту позвонить. Никаких выдуманных ответов.",
-  },
-  {
-    question: "Нужно ли менять CRM?",
-    answer:
-      "Нет, Manifestro работает независимо и может интегрироваться с вашей текущей CRM. На тарифе Scale мы настраиваем полную интеграцию.",
-  },
-  {
-    question: "Как мы контролируем переписку?",
-    answer:
-      "У вас есть доступ к панели управления, где видны все диалоги в реальном времени. Вы можете читать переписку, вмешиваться и получать отчёты.",
-  },
-];
+import { useDentalI18n } from "@/lib/i18n";
 
 function FAQItem({
   question,
@@ -83,23 +46,35 @@ function FAQItem({
 }
 
 export function FAQ() {
+  const { dictionary: t } = useDentalI18n();
+  const faqs = t.faq.questions;
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
     <section id="faq" className="py-20 md:py-32 bg-zinc-50">
       <Container>
-        <SectionHeading
-          badge="FAQ"
-          title="Частые вопросы"
-          description="Ответы на самые популярные вопросы о Manifestro"
-        />
+        <div className="max-w-3xl mx-auto text-center mb-16">
+          <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-teal-500/10 to-cyan-500/10 border border-teal-200/50 px-4 py-1.5 text-sm font-medium text-teal-700 mb-6">
+            <HelpCircle className="w-4 h-4" />
+            {t.faq.badge}
+          </div>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-zinc-900 tracking-tight mb-6">
+            {t.faq.title}{" "}
+            <span className="relative">
+              <span className="relative z-10 bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
+                {t.faq.titleHighlight}
+              </span>
+              <span className="absolute -bottom-1 left-0 right-0 h-2 bg-gradient-to-r from-teal-200 to-cyan-200 -skew-x-3 -z-0" />
+            </span>
+          </h2>
+        </div>
 
-        <div className="mt-16 max-w-3xl mx-auto bg-white rounded-2xl border border-zinc-100 p-2 md:p-4">
+        <div className="max-w-3xl mx-auto bg-white rounded-2xl border border-zinc-100 p-2 md:p-4">
           {faqs.map((faq, index) => (
             <FAQItem
               key={index}
-              question={faq.question}
-              answer={faq.answer}
+              question={faq.q}
+              answer={faq.a}
               isOpen={openIndex === index}
               onClick={() => setOpenIndex(openIndex === index ? null : index)}
             />
