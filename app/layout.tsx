@@ -59,6 +59,31 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="google-site-verification" content="hyx95IFIGVSmtl8Gv58-KD-o3u6xGjkrRA_YaoFQZiM" />
+        <link rel="canonical" href="https://manifestro.io" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              "name": "Manifestro",
+              "applicationCategory": "BusinessApplication",
+              "operatingSystem": "Web",
+              "description": "AI-powered sales automation platform. Replaces human-dependent sales with instant, accurate AI responses 24/7.",
+              "url": "https://manifestro.io",
+              "author": {
+                "@type": "Organization",
+                "name": "Manifestro"
+              },
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD",
+                "description": "14-day free trial"
+              }
+            })
+          }}
+        />
         {/* Google tag (gtag.js) */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-QVNSYZQHK2"

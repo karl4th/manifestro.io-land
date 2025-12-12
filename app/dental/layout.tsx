@@ -29,5 +29,34 @@ export default function DentalLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <DentalI18nProvider>{children}</DentalI18nProvider>;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "Manifestro Dental",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web",
+            "description": "AI-ассистент для стоматологий. Отвечает пациентам 24/7 в WhatsApp, снижает неявки, повышает качество сервиса.",
+            "url": "https://manifestro.io/dental",
+            "inLanguage": ["ru", "en", "kk"],
+            "author": {
+              "@type": "Organization",
+              "name": "Manifestro"
+            },
+            "offers": {
+              "@type": "Offer",
+              "price": "49000",
+              "priceCurrency": "KZT",
+              "description": "От 49 000 ₸/месяц, 14 дней бесплатно"
+            }
+          })
+        }}
+      />
+      <DentalI18nProvider>{children}</DentalI18nProvider>
+    </>
+  );
 }
