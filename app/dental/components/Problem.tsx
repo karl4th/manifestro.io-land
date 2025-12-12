@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Container } from "./ui";
 import { Clock, Users, TrendingUp, MessageSquare, Sparkles } from "lucide-react";
 import { useDentalI18n } from "@/lib/i18n";
+import { useIsMobile } from "@/lib/hooks/use-mobile";
 
 const icons = [Clock, Users, TrendingUp, MessageSquare];
 const colors = [
@@ -15,19 +16,21 @@ const colors = [
 
 export function Problem() {
   const { dictionary: t } = useDentalI18n();
+  const isMobile = useIsMobile();
   const challenges = t.problem.challenges;
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+    if (isMobile) return;
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({
-        x: (e.clientX / window.innerWidth - 0.5) * 20,
-        y: (e.clientY / window.innerHeight - 0.5) * 20,
+        x: (e.clientX / window.innerWidth - 0.5) * 15,
+        y: (e.clientY / window.innerHeight - 0.5) * 15,
       });
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [isMobile]);
 
   return (
     <section className="py-24 md:py-32 bg-zinc-900 text-white relative overflow-hidden">

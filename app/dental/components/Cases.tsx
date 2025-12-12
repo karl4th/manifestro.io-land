@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Container } from "./ui";
 import { TrendingUp, MessageCircle, Target, Clock, Award } from "lucide-react";
 import { useDentalI18n } from "@/lib/i18n";
+import { useIsMobile } from "@/lib/hooks/use-mobile";
 
 const metricIcons = [TrendingUp, MessageCircle, Target, Clock];
 const metricColors = [
@@ -15,10 +16,12 @@ const metricColors = [
 
 export function Cases() {
   const { dictionary: t } = useDentalI18n();
+  const isMobile = useIsMobile();
   const metrics = t.cases.metrics;
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+    if (isMobile) return;
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth - 0.5) * 15,
@@ -27,7 +30,7 @@ export function Cases() {
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [isMobile]);
 
   return (
     <section className="py-24 md:py-32 bg-white relative overflow-hidden">

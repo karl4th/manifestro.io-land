@@ -13,6 +13,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useDentalI18n } from "@/lib/i18n";
+import { useIsMobile } from "@/lib/hooks/use-mobile";
 
 const featureIcons = [MessageCircle, Stethoscope, CalendarCheck, Bell, HelpCircle, BarChart3];
 const featureColors = [
@@ -116,10 +117,12 @@ function DashboardPreview() {
 
 export function Features() {
   const { dictionary: t } = useDentalI18n();
+  const isMobile = useIsMobile();
   const features = t.features.list;
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+    if (isMobile) return;
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth - 0.5) * 15,
@@ -128,7 +131,7 @@ export function Features() {
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [isMobile]);
 
   return (
     <section id="features" className="py-24 md:py-32 bg-gradient-to-b from-zinc-50 to-white relative overflow-hidden">

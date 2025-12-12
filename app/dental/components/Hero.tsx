@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { ArrowRight, Sparkles, Zap, Shield, Clock } from "lucide-react";
 import { Container, Button } from "./ui";
 import { useDentalI18n } from "@/lib/i18n";
+import { useIsMobile } from "@/lib/hooks/use-mobile";
 
 function ChatDemo() {
   const { dictionary: t } = useDentalI18n();
@@ -181,9 +182,11 @@ function ChatDemo() {
 
 export function Hero() {
   const { dictionary: t } = useDentalI18n();
+  const isMobile = useIsMobile();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+    if (isMobile) return; // Skip mouse tracking on mobile
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth - 0.5) * 20,
@@ -192,7 +195,7 @@ export function Hero() {
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [isMobile]);
 
   return (
     <section className="relative min-h-screen pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">

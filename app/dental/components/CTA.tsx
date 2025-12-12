@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Container, Button } from "./ui";
 import { useDentalI18n } from "@/lib/i18n";
+import { useIsMobile } from "@/lib/hooks/use-mobile";
 
 export function CTA() {
   const { dictionary: t } = useDentalI18n();
+  const isMobile = useIsMobile();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+    if (isMobile) return;
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth - 0.5) * 30,
@@ -18,7 +21,7 @@ export function CTA() {
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [isMobile]);
 
   return (
     <section className="py-24 md:py-32 bg-zinc-900 relative overflow-hidden">

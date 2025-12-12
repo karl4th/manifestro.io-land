@@ -237,3 +237,25 @@
 .animate-fade-in {
   animation: fade-in 0.3s ease-out forwards;
 }
+
+/* Mobile performance optimizations */
+@media (max-width: 768px) {
+  /* Reduce blur on mobile - very expensive */
+  .blur-3xl {
+    filter: blur(32px) !important;
+  }
+  
+  /* Disable floating animations on mobile */
+  .animate-float {
+    animation: none !important;
+  }
+  
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

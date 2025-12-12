@@ -12,6 +12,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useDentalI18n } from "@/lib/i18n";
+import { useIsMobile } from "@/lib/hooks/use-mobile";
 
 const benefitIcons = [TrendingUp, Users, Clock, Heart, Target, Shield];
 const benefitColors = [
@@ -83,10 +84,12 @@ function GrowthChart() {
 
 export function Benefits() {
   const { dictionary: t } = useDentalI18n();
+  const isMobile = useIsMobile();
   const benefits = t.benefits.list;
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+    if (isMobile) return;
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth - 0.5) * 15,
@@ -95,7 +98,7 @@ export function Benefits() {
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [isMobile]);
 
   return (
     <section className="py-24 md:py-32 bg-gradient-to-b from-white to-zinc-50 relative overflow-hidden">

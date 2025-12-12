@@ -4,15 +4,18 @@ import { useEffect, useState } from "react";
 import { Container } from "./ui";
 import { Zap, Brain, Calendar, ArrowRight } from "lucide-react";
 import { useDentalI18n } from "@/lib/i18n";
+import { useIsMobile } from "@/lib/hooks/use-mobile";
 
 const icons = [Zap, Brain, Calendar];
 
 export function Intro() {
   const { dictionary: t } = useDentalI18n();
+  const isMobile = useIsMobile();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const points = t.intro.points;
 
   useEffect(() => {
+    if (isMobile) return;
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth - 0.5) * 15,
@@ -21,7 +24,7 @@ export function Intro() {
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [isMobile]);
 
   return (
     <section className="py-24 md:py-32 bg-white relative overflow-hidden">

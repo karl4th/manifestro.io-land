@@ -5,6 +5,7 @@ import { Container, Button } from "./ui";
 import { Check, Sparkles, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDentalI18n } from "@/lib/i18n";
+import { useIsMobile } from "@/lib/hooks/use-mobile";
 
 const planColors = [
   "from-zinc-500 to-zinc-600",
@@ -14,10 +15,12 @@ const planColors = [
 
 export function Pricing() {
   const { dictionary: t } = useDentalI18n();
+  const isMobile = useIsMobile();
   const plans = t.pricing.plans;
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+    if (isMobile) return;
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth - 0.5) * 15,
@@ -26,7 +29,7 @@ export function Pricing() {
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [isMobile]);
 
   return (
     <section id="pricing" className="py-24 md:py-32 bg-gradient-to-b from-zinc-50 to-white relative overflow-hidden">
