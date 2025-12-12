@@ -31,6 +31,9 @@ export const metadata: Metadata = {
       follow: true,
     },
   },
+  alternates: {
+    canonical: "https://manifestro.io",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -59,7 +62,6 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="google-site-verification" content="hyx95IFIGVSmtl8Gv58-KD-o3u6xGjkrRA_YaoFQZiM" />
-        <link rel="canonical" href="https://manifestro.io" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
