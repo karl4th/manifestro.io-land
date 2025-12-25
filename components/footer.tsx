@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { useState } from "react"
+import Image from "next/image"
 
 const footerLinks = {
   product: [
@@ -50,8 +51,20 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center space-x-2 mb-4">
-              <Brain className="h-6 w-6" />
-              <span className="font-bold text-lg">MANIFESTRO</span>
+              <Image 
+                src="/ligth.png" 
+                alt="MANIFESTRO"
+                width={300}
+                height={74}
+                className="dark:hidden h-6 w-auto"
+              />
+              <Image 
+                src="/dark.png" 
+                alt="MANIFESTRO"
+                width={300}
+                height={74}
+                className="hidden dark:block h-6 w-auto"
+              />
             </Link>
             <p className="text-sm text-muted-foreground mb-4 max-w-xs">
               Engineering the future of collective intelligence. Transform your business with coordinated AI systems.

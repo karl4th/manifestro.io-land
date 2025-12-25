@@ -21,6 +21,7 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Brain, Menu, Sparkles, ArrowRight } from "lucide-react"
 import { motion } from "framer-motion"
+import Image from "next/image"
 
 export default function Navigation() {
   const [scrolled, setScrolled] = useState(false)
@@ -43,21 +44,20 @@ export default function Navigation() {
     >
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center space-x-2 group">
-          <motion.div
-            whileHover={{ rotate: 180 }}
-            transition={{ duration: 0.3, type: "spring" }}
-            className="relative"
-          >
-            <Brain className="h-6 w-6" />
-            <motion.div
-              className="absolute inset-0 rounded-full bg-primary/20 blur-xl"
-              animate={{ scale: [1, 1.5, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
+          <Image 
+              src="/ligth.png" 
+              alt="MANIFESTRO"
+              width={150}
+              height={44}
+              className="dark:hidden"
             />
-          </motion.div>
-          <span className="font-bold text-lg group-hover:text-primary transition-colors">
-            MANIFESTRO
-          </span>
+            <Image 
+              src="/dark.png" 
+              alt="MANIFESTRO"
+              width={150}
+              height={44}
+              className="hidden dark:block"
+            />
         </Link>
 
         {/* Desktop Navigation */}

@@ -46,12 +46,14 @@ const team = [
   {
     name: "Karl Bagzhan",
     role: "Founder & CEO",
-    description: "Visionary leader with expertise in AI systems architecture"
+    description: "Visionary leader with expertise in AI systems architecture",
+    image: "/Bagzhan Karl.png"
   },
   {
     name: "Karl Alizhan",
     role: "Founder & Marketing Director",
-    description: "Growth strategist passionate about AI democratization"
+    description: "Growth strategist passionate about AI democratization",
+    image: "/Alizhan Karl.png"
   }
 ]
 
@@ -177,10 +179,14 @@ export default function AboutPage() {
                 <Card key={member.name}>
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Users className="h-8 w-8 text-primary" />
+                      <div className="relative h-16 w-16 rounded-full overflow-hidden bg-primary/10">
+                        <img 
+                          src={member.image} 
+                          alt={member.name}
+                          className="h-full w-full object-cover"
+                        />
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <h3 className="text-xl font-semibold">{member.name}</h3>
                         <p className="text-primary mb-2">{member.role}</p>
                         <p className="text-muted-foreground">{member.description}</p>

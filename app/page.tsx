@@ -2,7 +2,6 @@
 
 import Navigation from "@/components/navigation"
 import HeroSection from "@/components/hero-section"
-import TrustedBy from "@/components/trusted-by"
 import Channels from "@/components/channels"
 import ApiSection from "@/components/api-section"
 import FeaturesBento from "@/components/features-bento"
@@ -20,7 +19,6 @@ export default function Home() {
       <Navigation />
       <main>
         <HeroSection />
-        <TrustedBy />
         <Channels />
         <ApiSection />
         <FeaturesBento />
