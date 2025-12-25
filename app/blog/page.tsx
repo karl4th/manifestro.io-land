@@ -179,7 +179,7 @@ export default function BlogPage() {
                       <Badge variant="outline">{featuredPost.category}</Badge>
                     </div>
                     <h2 className="text-2xl font-bold mb-4 hover:text-primary transition-colors">
-                      <Link href={`/blog/${featuredPost.id}`}>
+                      <Link href={`/blog/${featuredPost.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`}>
                         {featuredPost.title}
                       </Link>
                     </h2>
@@ -191,7 +191,11 @@ export default function BlogPage() {
                       </div>
                       <div className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
-                        {new Date(featuredPost.date).toLocaleDateString()}
+                        {new Date(featuredPost.date).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit'
+                        })}
                       </div>
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
@@ -199,7 +203,7 @@ export default function BlogPage() {
                       </div>
                     </div>
                     <Button asChild>
-                      <Link href={`/blog/${featuredPost.id}`}>
+                      <Link href={`/blog/${featuredPost.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`}>
                         Read Article <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
@@ -230,7 +234,7 @@ export default function BlogPage() {
                       </div>
                     </div>
                     <CardTitle className="line-clamp-2 group-hover:text-primary transition-colors">
-                      <Link href={`/blog/${post.id}`}>
+                      <Link href={`/blog/${post.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`}>
                         {post.title}
                       </Link>
                     </CardTitle>
@@ -244,7 +248,11 @@ export default function BlogPage() {
                       </div>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3" />
-                        {new Date(post.date).toLocaleDateString()}
+                        {new Date(post.date).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit'
+                        })}
                       </div>
                     </div>
                   </CardContent>
