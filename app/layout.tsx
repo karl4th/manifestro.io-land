@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
-import { I18nProvider } from "@/lib/i18n";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,42 +14,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Manifestro — The End of Human-Dependent Sales",
-  description:
-    "No more slow replies. No more missed leads. No more human error. Manifestro replaces the weakest link in business: people.",
-  keywords:
-    "AI sales, sales automation, AI assistant, lead generation, sales AI, no human error, automated sales, manifestro",
-  authors: [{ name: "Manifestro" }],
-  creator: "Manifestro",
-  publisher: "Manifestro",
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-    },
-  },
-  alternates: {
-    canonical: "https://manifestro.io",
-  },
+  title: "MANIFESTRO - Engineering Collective Intelligence",
+  description: "Building the future of AI with Collective Intellect systems. Join the waitlist for early access to revolutionary AI technology.",
+  keywords: ["AI", "collective intelligence", "business automation", "MANIFESTRO", "Intellektron", "artificial intelligence"],
   openGraph: {
+    title: "MANIFESTRO - Engineering Collective Intelligence",
+    description: "The future of business lies in coordinated AI systems. Join the revolution.",
     type: "website",
-    locale: "en_US",
-    alternateLocale: "ru_RU",
-    url: "https://manifestro.io",
-    siteName: "Manifestro",
-    title: "Manifestro — The End of Human-Dependent Sales",
-    description:
-      "No more slow replies. No more missed leads. No more human error. Manifestro replaces the weakest link in business.",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "Manifestro — The End of Human-Dependent Sales",
-    description:
-      "No more slow replies. No more missed leads. No more human error. Manifestro replaces the weakest link in business.",
-  },
-  metadataBase: new URL("https://manifestro.io"),
 };
 
 export default function RootLayout({
@@ -59,51 +30,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <head>
-        <meta name="google-site-verification" content="hyx95IFIGVSmtl8Gv58-KD-o3u6xGjkrRA_YaoFQZiM" />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "SoftwareApplication",
-              "name": "Manifestro",
-              "applicationCategory": "BusinessApplication",
-              "operatingSystem": "Web",
-              "description": "AI-powered sales automation platform. Replaces human-dependent sales with instant, accurate AI responses 24/7.",
-              "url": "https://manifestro.io",
-              "author": {
-                "@type": "Organization",
-                "name": "Manifestro"
-              },
-              "offers": {
-                "@type": "Offer",
-                "price": "0",
-                "priceCurrency": "USD",
-                "description": "14-day free trial"
-              }
-            })
-          }}
-        />
-        {/* Google tag (gtag.js) */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-QVNSYZQHK2"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-QVNSYZQHK2');
-          `}
-        </Script>
-      </head>
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <I18nProvider>{children}</I18nProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
