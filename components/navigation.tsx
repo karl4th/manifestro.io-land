@@ -107,8 +107,8 @@ export default function Navigation() {
             
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
-                <Link href="/blog" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                  Blog
+                <Link href="/articles" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
+                  Articles
                 </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
@@ -147,8 +147,8 @@ export default function Navigation() {
                 <Link href="/about" className="text-lg font-semibold hover:text-primary transition-colors">
                   About
                 </Link>
-                <Link href="/blog" className="text-lg font-semibold hover:text-primary transition-colors">
-                  Blog
+                <Link href="/articles" className="text-lg font-semibold hover:text-primary transition-colors">
+                  Articles
                 </Link>
                 <Link href="/docs" className="text-lg font-semibold hover:text-primary transition-colors">
                   Documentation
