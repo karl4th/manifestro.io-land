@@ -34,67 +34,101 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-
-interface BlogPost {
-  id: string
-  title: string
-  slug: string
-  excerpt: string
-  author: string
-  date: string
-  status: "published" | "draft"
-  views: number
-  category: string
-}
+import { articlesApi, type Article, type ArticleList } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 export default function BlogManagement() {
-  const [posts, setPosts] = useState<BlogPost[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filterStatus, setFilterStatus] = useState<"all" | "published" | "draft">("all")
+  const router = useRouter()
+  const [articles, setArticles] = useState<Article[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
-  const router = useRouter()
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const { toast } = useToast()
 
   useEffect(() => {
+    loadArticles()
+  }, [currentPage, statusFilter])
+
+  const loadArticles = async () => {
+    setIsLoading(true)
+    setError("")
+    
     try {
-      // Load posts from localStorage
-      const savedPosts = JSON.parse(localStorage.getItem("blogPosts") || "[]")
-      // Ensure status is properly typed
-      const typedPosts = savedPosts.map((post: any) => ({
-        ...post,
-        status: post.status as "published" | "draft"
-      }))
-      setPosts(typedPosts as BlogPost[])
-    } catch (err) {
-      setError("Failed to load posts")
+      const status = statusFilter === "all" ? undefined : statusFilter
+      const response = await articlesApi.getArticles(currentPage, 10, status)
+      
+      if (response.error) {
+        setError(response.error)
+        return
+      }
+      
+      if (response.data) {
+        const articleList = response.data as ArticleList
+        setArticles(articleList.articles || [])
+        setTotalPages(articleList.pages || 1)
+      }
+    } catch (error) {
+      const errorMessage = "Failed to load articles"
+      setError(errorMessage)
+      toast({
+        title: "Error loading articles",
+        description: errorMessage,
+        variant: "destructive"
+      })
+      console.error('Load articles error:', error)
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }
 
-  const filteredPosts = posts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesFilter = filterStatus === "all" || post.status === filterStatus
-    return matchesSearch && matchesFilter
-  })
-
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this post?")) {
-      const updatedPosts = posts.filter(post => post.id !== id)
-      setPosts(updatedPosts)
-      localStorage.setItem("blogPosts", JSON.stringify(updatedPosts))
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this article?")) {
+      return
+    }
+    
+    try {
+      const response = await articlesApi.deleteArticle(id)
+      
+      if (response.error) {
+        setError(response.error)
+        return
+      }
+      
+      // Reload articles
+      toast({
+        title: "Article deleted",
+        description: "The article has been successfully deleted."
+      })
+      loadArticles()
+    } catch (error) {
+      const errorMessage = "Failed to delete article"
+      setError(errorMessage)
+      toast({
+        title: "Error deleting article",
+        description: errorMessage,
+        variant: "destructive"
+      })
+      console.error('Delete error:', error)
     }
   }
 
-  const handleStatusToggle = (id: string) => {
-    const updatedPosts = posts.map(post => 
-      post.id === id 
-        ? { ...post, status: (post.status === "published" ? "draft" : "published") as "published" | "draft" }
-        : post
-    )
-    setPosts(updatedPosts)
-    localStorage.setItem("blogPosts", JSON.stringify(updatedPosts))
+  const filteredArticles = articles.filter(article => 
+    article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    article.excerpt?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString()
+  }
+
+  const getAuthorName = (article: Article) => {
+    if (article.author) {
+      return `${article.author.first_name} ${article.author.last_name}`
+    }
+    return "Unknown"
   }
 
   return (
@@ -115,60 +149,23 @@ export default function BlogManagement() {
         </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{posts.length}</div>
+      {error && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <p className="text-red-600">{error}</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Published</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {posts.filter(p => p.status === "published").length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Drafts</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {posts.filter(p => p.status === "draft").length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {posts.reduce((acc, post) => acc + post.views, 0)}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      )}
 
       {/* Filters */}
       <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-4">
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search posts..."
+                  placeholder="Search articles..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -177,20 +174,23 @@ export default function BlogManagement() {
             </div>
             <div className="flex gap-2">
               <Button
-                variant={filterStatus === "all" ? "default" : "outline"}
-                onClick={() => setFilterStatus("all")}
+                variant={statusFilter === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setStatusFilter("all")}
               >
                 All
               </Button>
               <Button
-                variant={filterStatus === "published" ? "default" : "outline"}
-                onClick={() => setFilterStatus("published")}
+                variant={statusFilter === "published" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setStatusFilter("published")}
               >
                 Published
               </Button>
               <Button
-                variant={filterStatus === "draft" ? "default" : "outline"}
-                onClick={() => setFilterStatus("draft")}
+                variant={statusFilter === "draft" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setStatusFilter("draft")}
               >
                 Drafts
               </Button>
@@ -199,106 +199,135 @@ export default function BlogManagement() {
         </CardContent>
       </Card>
 
-      {/* Posts Table */}
+      {/* Articles Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Posts</CardTitle>
+          <CardTitle>Articles</CardTitle>
           <CardDescription>
-            A list of all your blog posts including their status and views.
+            {filteredArticles.length} articles found
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {filteredPosts.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                {searchTerm || filterStatus !== "all" 
-                  ? "No posts match your filters." 
-                  : "No posts yet. Create your first post to get started."}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : filteredArticles.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+                <Calendar className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">No articles found</h3>
+              <p className="text-muted-foreground mb-4">
+                {searchTerm ? "Try adjusting your search terms" : "Get started by creating your first article"}
               </p>
+              {!searchTerm && (
+                <Button asChild>
+                  <Link href="/admin/blog/new">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Article
+                  </Link>
+                </Button>
+              )}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Author</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Views</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredPosts.map((post) => (
-                  <TableRow key={post.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{post.title}</p>
-                        <p className="text-sm text-muted-foreground line-clamp-1">
-                          {post.excerpt}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{post.category}</Badge>
-                    </TableCell>
-                    <TableCell>{post.author}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(post.date).toLocaleDateString()}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={post.status === "published" ? "default" : "secondary"}
-                        className="cursor-pointer"
-                        onClick={() => handleStatusToggle(post.id)}
-                      >
-                        {post.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{post.views}</TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/blog/${post.slug}`} target="_blank">
-                              <Eye className="h-4 w-4 mr-2" />
-                              View
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/admin/blog/${post.slug}/edit`}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={() => handleDelete(post.id)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Author</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Views</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="w-[100px]">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredArticles.map((article) => (
+                    <TableRow key={article.id}>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{article.title}</div>
+                          {article.excerpt && (
+                            <div className="text-sm text-muted-foreground line-clamp-1">
+                              {article.excerpt}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>{getAuthorName(article)}</TableCell>
+                      <TableCell>
+                        <Badge variant="default">
+                          published
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {article.category?.name || "Uncategorized"}
+                      </TableCell>
+                      <TableCell>{article.views || 0}</TableCell>
+                      <TableCell>{formatDate(article.created_at)}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            
+                            <DropdownMenuItem asChild>
+                              <Link href={`/admin/blog/${article.id}/edit`}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={() => handleDelete(article.id)}
+                              className="text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

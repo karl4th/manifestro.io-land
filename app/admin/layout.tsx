@@ -26,6 +26,9 @@ import {
 import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
+import { useAuth } from "@/hooks/use-auth"
+import { useRequireAuth } from "@/hooks/use-require-auth"
+import { Loader2 } from "lucide-react"
 
 const navigation = [
   { name: "Dashboard", href: "/admin", icon: Brain },
@@ -38,24 +41,36 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { user, logout } = useAuth()
+  const { isAuthenticated, isLoading } = useRequireAuth()
   const router = useRouter()
 
-  useEffect(() => {
-    const auth = localStorage.getItem("adminAuth")
-    if (!auth) {
-      router.push("/login")
-    } else {
-      setIsAuthenticated(true)
-    }
-  }, [router])
-
-  const handleLogout = () => {
-    localStorage.removeItem("adminAuth")
-    router.push("/login")
+  const handleLogout = async () => {
+    await logout()
   }
 
+  const userInitials = user ? 
+    `${user.first_name?.[0]}${user.last_name?.[0]}`.toUpperCase() : 
+    "AD"
+
+  const getDisplayName = () => {
+    if (user) {
+      return `${user.first_name} ${user.last_name}`
+    }
+    return "Admin User"
+  }
+
+  // Show loading spinner while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
+
+  // If not authenticated, useRequireAuth will redirect to login
   if (!isAuthenticated) {
     return null
   }
@@ -116,11 +131,11 @@ export default function AdminLayout({
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="w-full justify-start">
                   <Avatar className="h-8 w-8 mr-3">
-                    <AvatarFallback>AD</AvatarFallback>
+                    <AvatarFallback>{userInitials}</AvatarFallback>
                   </Avatar>
                   <div className="text-left">
-                    <p className="text-sm font-medium">Admin User</p>
-                    <p className="text-xs text-muted-foreground">admin@manifestro.io</p>
+                    <p className="text-sm font-medium">{getDisplayName()}</p>
+                    <p className="text-xs text-muted-foreground">{user?.email || "admin@manifestro.io"}</p>
                   </div>
                 </Button>
               </DropdownMenuTrigger>

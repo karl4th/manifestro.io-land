@@ -10,36 +10,52 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, Lock } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { useAuth } from "@/hooks/use-auth"
+import { useToast } from "@/hooks/use-toast"
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const { login, isLoading } = useAuth()
+  const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-    setIsLoading(true)
 
-    // Validate email domain
-    if (!email.endsWith("@manifestro.io")) {
-      setError("Must be an email with @manifestro.io domain")
-      setIsLoading(false)
-      return
-    }
+    try {
+      const result = await login(email, password)
+      
+      if (!result.success) {
+        setError(result.error || "Login failed")
+        toast({
+          title: "Login Failed",
+          description: result.error || "Invalid credentials",
+          variant: "destructive"
+        })
+        return
+      }
 
-    // Simple password check - in production, you'd want to use a proper authentication system
-    if (password === "manifestro2024") {
-      localStorage.setItem("adminAuth", "true")
+      toast({
+        title: "Success",
+        description: "Successfully logged in"
+      })
+      
+      // Redirect to admin panel
       router.push("/admin")
-    } else {
-      setError("Invalid password")
+    } catch (err) {
+      const errorMessage = "An unexpected error occurred. Please try again."
+      setError(errorMessage)
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
+      })
+      console.error("Login error:", err)
     }
-
-    setIsLoading(false)
   }
 
   return (

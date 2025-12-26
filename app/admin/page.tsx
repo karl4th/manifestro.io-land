@@ -13,10 +13,13 @@ import {
   Plus,
   Calendar,
   Clock,
-  Mail
+  Mail,
+  Loader2
 } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
+import { waitlistApi, articlesApi, type WaitlistEntry, type Article } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 interface ContentItem {
   id: string
@@ -35,36 +38,85 @@ export default function AdminDashboard() {
     totalViews: 0,
     recentSignups: 0
   })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
 
   useEffect(() => {
-    // Load data from localStorage
-    const blogPosts = JSON.parse(localStorage.getItem("blogPosts") || "[]")
-    const waitlist = JSON.parse(localStorage.getItem("waitlist") || "[]")
-
-    // Calculate recent signups (last 7 days)
-    const sevenDaysAgo = new Date()
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-    const recentSignups = waitlist.filter((entry: any) => 
-      new Date(entry.date) > sevenDaysAgo
-    ).length
-
-    setStats({
-      totalBlog: blogPosts.length,
-      totalWaitlist: waitlist.length,
-      totalViews: blogPosts.reduce((acc: number, post: any) => acc + (post.views || 0), 0),
-      recentSignups
-    })
-
-    // Combine recent content
-    const allContent = [
-      ...blogPosts.map((item: any) => ({ ...item, type: "blog" as const })),
-      ...waitlist.map((item: any) => ({ ...item, type: "waitlist" as const, title: item.email }))
-    ]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 5)
-
-    setRecentContent(allContent)
+    loadDashboardData()
   }, [])
+
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      // Load articles and waitlist data in parallel
+      const [articlesResponse, waitlistResponse] = await Promise.all([
+        articlesApi.getArticles(1, 100),
+        waitlistApi.getWaitlistEntries(1, 1000)
+      ])
+
+      if (articlesResponse.error) {
+        console.warn('Failed to load articles:', articlesResponse.error)
+      }
+
+      if (waitlistResponse.error) {
+        console.warn('Failed to load waitlist:', waitlistResponse.error)
+      }
+
+      const articles = articlesResponse.data?.articles || []
+      const waitlistEntries = waitlistResponse.data?.items || []
+
+      // Calculate recent signups (last 7 days)
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+      const recentSignups = waitlistEntries.filter((entry: WaitlistEntry) => 
+        new Date(entry.created_at) > sevenDaysAgo
+      ).length
+
+      setStats({
+        totalBlog: articles.length,
+        totalWaitlist: waitlistEntries.length,
+        totalViews: articles.reduce((acc: number, post: Article) => acc + (post.views || 0), 0),
+        recentSignups
+      })
+
+      // Combine recent content
+      const allContent: ContentItem[] = [
+        ...articles.map((item: Article) => ({
+          id: item.id,
+          title: item.title,
+          type: "blog" as const,
+          status: "published" as const,
+          date: item.created_at,
+          views: item.views
+        })),
+        ...waitlistEntries.slice(0, 5).map((item: WaitlistEntry) => ({
+          id: item.id,
+          title: item.email,
+          type: "waitlist" as const,
+          status: item.status as any,
+          date: item.created_at
+        }))
+      ]
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 5)
+
+      setRecentContent(allContent)
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to load dashboard data"
+      setError(errorMessage)
+      toast({
+        title: "Error loading dashboard",
+        description: errorMessage,
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const statCards = [
     {
@@ -100,12 +152,34 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Manage your content and track performance
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Manage your content and track performance
+          </p>
+        </div>
+        <Button onClick={loadDashboardData} variant="outline" disabled={loading}>
+          {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+          Refresh
+        </Button>
       </div>
+
+      {/* Error State */}
+      {error && (
+        <div className="p-4 border border-red-200 bg-red-50 rounded-lg text-red-700">
+          <p className="font-medium">Error loading dashboard:</p>
+          <p>{error}</p>
+          <Button 
+            onClick={loadDashboardData} 
+            variant="outline" 
+            size="sm" 
+            className="mt-2"
+          >
+            Try Again
+          </Button>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -171,19 +245,24 @@ export default function AdminDashboard() {
           </div>
         </CardHeader>
         <CardContent>
-          {recentContent.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin mr-2" />
+              <span>Loading recent content...</span>
+            </div>
+          ) : recentContent.length === 0 ? (
             <div className="text-center py-8">
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No content yet</h3>
               <p className="text-muted-foreground mb-4">
-                Start by creating your first blog post, release, or research paper.
+                Start by creating your first blog post or check your waitlist.
               </p>
               <div className="flex gap-2 justify-center">
                 <Button asChild>
                   <Link href="/admin/blog/new">Create Blog Post</Link>
                 </Button>
                 <Button variant="outline" asChild>
-                  <Link href="/admin/releases/new">New Release</Link>
+                  <Link href="/admin/waitlist">View Waitlist</Link>
                 </Button>
               </div>
             </div>

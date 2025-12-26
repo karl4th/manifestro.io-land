@@ -7,38 +7,52 @@ import { cn } from "@/lib/utils";
 import { ArrowUpRight, CirclePlay, Brain, Network } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { waitlistApi } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Hero() {
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    
     try {
-      const response = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
+      const response = await waitlistApi.join({
+        email,
+        ip_address: undefined,
+        user_agent: navigator.userAgent,
+        utm_source: 'hero_form'
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setIsSubmitted(true);
-        setEmail('');
-        setTimeout(() => setIsSubmitted(false), 3000);
-      } else {
-        if (response.status === 409) {
-          alert('Этот email уже добавлен в waitlist');
-        } else {
-          alert('Ошибка: ' + data.error);
-        }
+      if (response.error) {
+        toast({
+          title: "Ошибка",
+          description: response.error,
+          variant: "destructive"
+        });
+        return;
       }
+
+      setIsSubmitted(true);
+      setEmail('');
+      toast({
+        title: "Успешно!",
+        description: "Вы добавлены в waitlist. Мы сообщим вам о запуске."
+      });
+      setTimeout(() => setIsSubmitted(false), 3000);
     } catch (error) {
       console.error('Submit error:', error);
-      alert('Произошла ошибка. Попробуйте еще раз.');
+      toast({
+        title: "Ошибка",
+        description: "Произошла ошибка. Попробуйте еще раз.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -90,8 +104,9 @@ export default function Hero() {
               type="submit" 
               size="lg" 
               className="rounded-full text-base whitespace-nowrap"
+              disabled={isLoading || isSubmitted}
             >
-              {isSubmitted ? "Добавлены!" : "Войти в waitlist"}
+              {isLoading ? "Добавляем..." : isSubmitted ? "Добавлены!" : "Войти в waitlist"}
             </Button>
           </div>
           {isSubmitted && (

@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,282 +14,290 @@ import {
   ArrowRight,
   TrendingUp,
   Cpu,
-  Network
+  Network,
+  Eye
 } from "lucide-react"
 import Navigation from "@/components/navigation"
 import Link from "next/link"
-import { useState } from "react"
 import { motion } from "framer-motion"
+import { articlesApi } from "@/lib/api"
+import type { ArticleShortResponse } from "@/lib/types"
 
-const blogPosts = [
-  {
-    id: 1,
-    title: "The Future of Collective Intelligence: How AI Agents Work Together",
-    excerpt: "Exploring the paradigm shift from single AI models to coordinated systems of specialized agents that achieve superior results through collaboration.",
-    author: "Karl Bagzhan",
-    date: "2024-12-20",
-    readTime: "8 min",
-    category: "Research",
-    featured: true,
-    image: "/api/placeholder/600/400"
-  },
-  {
-    id: 2,
-    title: "Building Scalable AI Systems: Lessons from 1000+ Deployments",
-    excerpt: "Technical deep-dive into our architecture patterns for building resilient, scalable AI systems that can handle enterprise workloads.",
-    author: "Engineering Team",
-    date: "2024-12-18",
-    readTime: "12 min",
-    category: "Engineering",
-    featured: false,
-    image: "/api/placeholder/600/400"
-  },
-  {
-    id: 3,
-    title: "DeepSeek vs GPT-4: A Comparative Analysis for Enterprise Use",
-    excerpt: "Comprehensive benchmarking study comparing leading AI models across various enterprise use cases and performance metrics.",
-    author: "Research Team",
-    date: "2024-12-15",
-    readTime: "10 min",
-    category: "Analysis",
-    featured: false,
-    image: "/api/placeholder/600/400"
-  },
-  {
-    id: 4,
-    title: "The Ant Colony Algorithm: Nature's Inspiration for AI Coordination",
-    excerpt: "How we drew inspiration from ant colony behavior to design our revolutionary AI coordination system.",
-    author: "Karl Alizhan",
-    date: "2024-12-12",
-    readTime: "6 min",
-    category: "Research",
-    featured: false,
-    image: "/api/placeholder/600/400"
-  },
-  {
-    id: 5,
-    title: "Security in the Age of Collective AI: Best Practices",
-    excerpt: "Essential security considerations when deploying multiple AI agents in enterprise environments.",
-    author: "Security Team",
-    date: "2024-12-10",
-    readTime: "9 min",
-    category: "Security",
-    featured: false,
-    image: "/api/placeholder/600/400"
-  },
-  {
-    id: 6,
-    title: "Real-time AI: The Power of Streaming Inference",
-    excerpt: "Exploring the technical implementation of real-time AI inference and its applications in modern business.",
-    author: "Engineering Team",
-    date: "2024-12-08",
-    readTime: "7 min",
-    category: "Engineering",
-    featured: false,
-    image: "/api/placeholder/600/400"
-  }
-]
-
-const categories = [
-  { name: "All", count: blogPosts.length },
-  { name: "Research", count: 2 },
-  { name: "Engineering", count: 2 },
-  { name: "Analysis", count: 1 },
-  { name: "Security", count: 1 }
-]
-
-export default function BlogPage() {
+export default function ArticlesPage() {
+  const [articles, setArticles] = useState<ArticleShortResponse[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("All")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
 
-  const filteredPosts = blogPosts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === "All" || post.category === selectedCategory
-    return matchesSearch && matchesCategory
-  })
+  useEffect(() => {
+    loadArticles()
+  }, [currentPage])
 
-  const featuredPost = blogPosts.find(post => post.featured)
-  const regularPosts = filteredPosts.filter(post => !post.featured)
+  const loadArticles = async () => {
+    setIsLoading(true)
+    setError("")
+    
+    try {
+      const response = await articlesApi.getArticles(currentPage, 12, "published")
+      
+      if (response.error) {
+        setError(response.error)
+        return
+      }
+      
+      if (response.data) {
+        const articleList = response.data as any
+        setArticles(articleList.articles || [])
+        setTotalPages(articleList.total_pages || 1)
+      }
+    } catch (error) {
+      setError("Failed to load articles")
+      console.error('Load articles error:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const filteredArticles = articles.filter(article => 
+    article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    article.excerpt?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
+
+  const getAuthorName = (article: ArticleShortResponse) => {
+    if (article.author) {
+      return `${article.author.first_name} ${article.author.last_name}`
+    }
+    return "Manifestro Team"
+  }
+
+  const getCategoryIcon = (categoryName?: string) => {
+    switch (categoryName?.toLowerCase()) {
+      case 'ai & ml':
+      case 'research':
+        return <Brain className="h-4 w-4" />
+      case 'engineering':
+        return <Cpu className="h-4 w-4" />
+      case 'product updates':
+        return <TrendingUp className="h-4 w-4" />
+      default:
+        return <Network className="h-4 w-4" />
+    }
+  }
+
+  const featuredArticles = filteredArticles.slice(0, 3)
+  const regularArticles = filteredArticles.slice(3)
 
   return (
-    <>
+    <div className="min-h-screen bg-background">
       <Navigation />
-      <main className="py-20 sm:py-32">
-        <div className="container">
+      
+      <main className="container mx-auto px-4 py-8">
+        {/* Hero Section */}
+        <div className="text-center mb-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mx-auto max-w-4xl text-center mb-16"
+            transition={{ duration: 0.5 }}
           >
-            <Badge className="mb-6">Blog & Research</Badge>
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-6">
-              Insights on
-              <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                {" "}Collective Intelligence
-              </span>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              Insights & Research
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Deep dives into AI research, engineering best practices, and the future of coordinated AI systems.
+              Explore the latest in AI, collective intelligence, and enterprise technology from our research team.
             </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="mb-12"
-          >
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search articles..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                {categories.map((category) => (
-                  <Button
-                    key={category.name}
-                    variant={selectedCategory === category.name ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedCategory(category.name)}
-                  >
-                    {category.name} ({category.count})
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-
-          {featuredPost && selectedCategory === "All" && searchTerm === "" && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="mb-16"
-            >
-              <Card className="overflow-hidden">
-                <div className="md:flex">
-                  <div className="md:w-2/3 p-8">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Badge variant="secondary">Featured</Badge>
-                      <Badge variant="outline">{featuredPost.category}</Badge>
-                    </div>
-                    <h2 className="text-2xl font-bold mb-4 hover:text-primary transition-colors">
-                      <Link href={`/blog/${featuredPost.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`}>
-                        {featuredPost.title}
-                      </Link>
-                    </h2>
-                    <p className="text-muted-foreground mb-6">{featuredPost.excerpt}</p>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
-                      <div className="flex items-center gap-1">
-                        <User className="h-4 w-4" />
-                        {featuredPost.author}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        {new Date(featuredPost.date).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit'
-                        })}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {featuredPost.readTime}
-                      </div>
-                    </div>
-                    <Button asChild>
-                      <Link href={`/blog/${featuredPost.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`}>
-                        Read Article <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </div>
-                  <div className="md:w-1/3 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                    <Brain className="h-24 w-24 text-primary/20" />
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-          )}
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {regularPosts.map((post, index) => (
-              <motion.div
-                key={post.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + index * 0.1 }}
-              >
-                <Card className="h-full hover:shadow-lg transition-all duration-300 group cursor-pointer">
-                  <CardHeader>
-                    <div className="flex items-center justify-between mb-2">
-                      <Badge variant="outline">{post.category}</Badge>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        {post.readTime}
-                      </div>
-                    </div>
-                    <CardTitle className="line-clamp-2 group-hover:text-primary transition-colors">
-                      <Link href={`/blog/${post.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`}>
-                        {post.title}
-                      </Link>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4 line-clamp-3">{post.excerpt}</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <User className="h-3 w-3" />
-                        <span className="truncate">{post.author}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(post.date).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit'
-                        })}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-
-          {regularPosts.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-16"
-            >
-              <p className="text-muted-foreground">No articles found matching your criteria.</p>
-            </motion.div>
-          )}
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="mt-20 text-center"
-          >
-            <h3 className="text-2xl font-bold mb-4">Stay updated with our research</h3>
-            <p className="text-muted-foreground mb-6">
-              Get the latest insights on collective intelligence delivered to your inbox.
-            </p>
-            <Button size="lg" className="rounded-full" asChild>
-              <Link href="#waitlist">
-                Subscribe to Newsletter <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
           </motion.div>
         </div>
+
+        {error && (
+          <Card className="mb-8 border-red-200 bg-red-50">
+            <CardContent className="pt-6">
+              <p className="text-red-600">{error}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Search */}
+        <div className="max-w-md mx-auto mb-12">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search articles..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : filteredArticles.length === 0 ? (
+          <div className="text-center py-12">
+            <h3 className="text-lg font-semibold mb-2">No articles found</h3>
+            <p className="text-muted-foreground">
+              {searchTerm ? "Try adjusting your search terms" : "Check back later for new content"}
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Featured Articles */}
+            {featuredArticles.length > 0 && (
+              <div className="mb-12">
+                <h2 className="text-2xl font-bold mb-6">Featured Articles</h2>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {featuredArticles.map((article, index) => (
+                    <motion.div
+                      key={article.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <Card className="h-full hover:shadow-lg transition-shadow">
+                        <CardHeader>
+                          <div className="flex items-center gap-2 mb-2">
+                            {getCategoryIcon(article.category?.name)}
+                            <Badge variant="secondary" className="text-xs">
+                              {article.category?.name || "Article"}
+                            </Badge>
+                          </div>
+                          <CardTitle className="line-clamp-2">
+                            <Link href={`/articles/${article.slug}`} className="hover:text-primary">
+                              {article.title}
+                            </Link>
+                          </CardTitle>
+                          <CardDescription className="line-clamp-3">
+                            {article.excerpt}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center justify-between text-sm text-muted-foreground">
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center gap-1">
+                                <User className="h-3 w-3" />
+                                {getAuthorName(article)}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {formatDate(article.created_at)}
+                              </div>
+                            </div>
+                            
+                          </div>
+                          <div className="mt-4">
+                            <Button variant="ghost" size="sm" asChild>
+                              <Link href={`/articles/${article.slug}`}>
+                                Read More
+                                <ArrowRight className="h-4 w-4 ml-2" />
+                              </Link>
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Regular Articles */}
+            {regularArticles.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold mb-6">Latest Articles</h2>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {regularArticles.map((article, index) => (
+                    <motion.div
+                      key={article.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: (index + featuredArticles.length) * 0.1 }}
+                    >
+                      <Card className="h-full hover:shadow-lg transition-shadow">
+                        <CardHeader>
+                          <div className="flex items-center gap-2 mb-2">
+                            {getCategoryIcon(article.category?.name)}
+                            <Badge variant="secondary" className="text-xs">
+                              {article.category?.name || "Article"}
+                            </Badge>
+                          </div>
+                          <CardTitle className="line-clamp-2">
+                            <Link href={`/articles/${article.slug}`} className="hover:text-primary">
+                              {article.title}
+                            </Link>
+                          </CardTitle>
+                          <CardDescription className="line-clamp-3">
+                            {article.excerpt}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center justify-between text-sm text-muted-foreground">
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center gap-1">
+                                <User className="h-3 w-3" />
+                                {getAuthorName(article)}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {formatDate(article.created_at)}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Eye className="h-3 w-3" />
+                              {article.view_count || 0}
+                            </div>
+                          </div>
+                          <div className="mt-4">
+                            <Button variant="ghost" size="sm" asChild>
+                              <Link href={`/articles/${article.slug}`}>
+                                Read More
+                                <ArrowRight className="h-4 w-4 ml-2" />
+                              </Link>
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-12">
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+          </>
+        )}
       </main>
-    </>
+    </div>
   )
 }

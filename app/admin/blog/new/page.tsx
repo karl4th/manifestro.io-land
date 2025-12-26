@@ -15,6 +15,8 @@ import RichTextEditor from "@/components/ui/rich-text-editor"
 import { Save, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
+import { articlesApi, categoriesApi, tagsApi, type ArticleCreate, type Category, type Tag } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 interface BlogPost {
   id: string
@@ -32,94 +34,116 @@ interface BlogPost {
 
 export default function NewBlogPost() {
   const router = useRouter()
-  const [post, setPost] = useState<Partial<BlogPost>>({
+  const [post, setPost] = useState<Partial<ArticleCreate>>({
     title: "",
     excerpt: "",
     content: "",
-    author: "Admin User",
-    status: "draft",
-    category: "",
-    tags: []
+    category_id: "",
+    tag_ids: []
   })
+  const [status, setStatus] = useState<"published" | "draft">("draft")
   const [tagInput, setTagInput] = useState("")
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState("")
-  const [currentUser, setCurrentUser] = useState("Admin User")
+  const [errorMessage, setErrorMessage] = useState("")
+  const [categories, setCategories] = useState<Category[]>([])
+  const [tags, setTags] = useState<Tag[]>([])
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const { toast } = useToast()
 
   useEffect(() => {
-    // In a real app, you'd get the current user from auth context
-    // For now, we'll use a simple approach
-    const savedUser = localStorage.getItem("adminUser")
-    if (savedUser) {
-      setCurrentUser(savedUser)
-      setPost(prev => ({ ...prev, author: savedUser }))
-    }
+    loadData()
   }, [])
 
-  const categories = [
-    "AI & ML",
-    "Product Updates",
-    "Company News",
-    "Engineering",
-    "Research",
-    "Tutorials"
-  ]
+  const loadData = async () => {
+    try {
+      const [categoriesRes, tagsRes] = await Promise.all([
+        categoriesApi.getCategories(),
+        tagsApi.getTags()
+      ])
+
+      if (categoriesRes.data) {
+        setCategories((categoriesRes.data as any).items || [])
+      }
+      if (tagsRes.data) {
+        setTags((tagsRes.data as any).items || [])
+      }
+    } catch (error) {
+      console.error('Failed to load data:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleSave = async (status: "published" | "draft") => {
     setIsSaving(true)
     setSaveMessage("")
+    setErrorMessage("")
     
-    // Generate slug from title
-    const slug = (post.title || "untitled")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-    
-    const newPost: BlogPost = {
-      id: Date.now().toString(),
-      title: post.title || "Untitled",
-      slug: slug || 'untitled',
-      excerpt: post.excerpt || "",
-      content: post.content || "",
-      author: post.author || "Admin User",
-      date: new Date().toISOString(),
-      status,
-      views: 0,
-      category: post.category || "Uncategorized",
-      tags: post.tags || []
-    }
+    try {
+      // Generate slug from title if not provided
+      const slug = post.slug || (post.title || "untitled")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '')
 
-    // Save to localStorage
-    const existingPosts = JSON.parse(localStorage.getItem("blogPosts") || "[]")
-    const updatedPosts = [newPost, ...existingPosts]
-    localStorage.setItem("blogPosts", JSON.stringify(updatedPosts))
+      const articleData: ArticleCreate = {
+        title: post.title || "Untitled",
+        slug,
+        excerpt: post.excerpt || "",
+        content: post.content || "",
+        category_id: post.category_id || "",
+        tag_ids: selectedTags.map(tag => tag.id)
+      }
 
-    setSaveMessage(`Post ${status === "published" ? "published" : "saved as draft"} successfully!`)
-    setIsSaving(false)
-    
-    if (status === "published") {
-      setTimeout(() => router.push("/admin/blog"), 1000)
+      const response = await articlesApi.createArticle(articleData)
+      
+      if (response.error) {
+        setErrorMessage(response.error)
+        toast({
+          title: "Error creating article",
+          description: response.error,
+          variant: "destructive"
+        })
+        return
+      }
+
+      const message = `Post ${status === "published" ? "published" : "saved as draft"} successfully!`
+      setSaveMessage(message)
+      toast({
+        title: "Success",
+        description: message
+      })
+      
+      if (status === "published") {
+        setTimeout(() => router.push("/admin/blog"), 1000)
+      }
+    } catch (error) {
+      setErrorMessage("An unexpected error occurred. Please try again.")
+      console.error('Save error:', error)
+    } finally {
+      setIsSaving(false)
     }
   }
 
   const addTag = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault()
-      if (!post.tags?.includes(tagInput.trim())) {
-        setPost(prev => ({
-          ...prev,
-          tags: [...(prev.tags || []), tagInput.trim()]
-        }))
+      const existingTag = tags.find(tag => 
+        tag.name.toLowerCase() === tagInput.trim().toLowerCase()
+      )
+      
+      if (existingTag && !selectedTags.find(t => t.id === existingTag.id)) {
+        setSelectedTags(prev => [...prev, existingTag])
       }
+      
       setTagInput("")
     }
   }
 
-  const removeTag = (tagToRemove: string) => {
-    setPost(prev => ({
-      ...prev,
-      tags: prev.tags?.filter(tag => tag !== tagToRemove) || []
-    }))
+  const removeTag = (tagToRemove: Tag) => {
+    setSelectedTags(prev => prev.filter(tag => tag.id !== tagToRemove.id))
   }
 
   const insertMarkdown = (syntax: string) => {
@@ -210,9 +234,20 @@ export default function NewBlogPost() {
         </Alert>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+      {errorMessage && (
+        <Alert variant="destructive">
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      )}
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Content</CardTitle>
@@ -263,7 +298,7 @@ export default function NewBlogPost() {
               <div>
                 <Label>Author</Label>
                 <Input
-                  value={currentUser}
+                  value="Admin User"
                   disabled
                   className="bg-muted"
                 />
@@ -272,16 +307,16 @@ export default function NewBlogPost() {
               <div>
                 <Label>Category</Label>
                 <Select 
-                  value={post.category} 
-                  onValueChange={(value) => setPost(prev => ({ ...prev, category: value }))}
+                  value={post.category_id} 
+                  onValueChange={(value) => setPost(prev => ({ ...prev, category_id: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map(category => (
-                      <SelectItem key={category} value={category}>
-                        {category}
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -297,9 +332,9 @@ export default function NewBlogPost() {
                   onKeyDown={addTag}
                 />
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {post.tags?.map(tag => (
-                    <Badge key={tag} variant="secondary" className="cursor-pointer">
-                      {tag}
+                  {selectedTags.map(tag => (
+                    <Badge key={tag.id} variant="secondary" className="cursor-pointer">
+                      {tag.name}
                       <button
                         onClick={() => removeTag(tag)}
                         className="ml-2 text-xs"
@@ -317,16 +352,16 @@ export default function NewBlogPost() {
                 <Label>Status</Label>
                 <div className="flex gap-2">
                   <Badge 
-                    variant={post.status === "draft" ? "default" : "secondary"}
+                    variant={status === "draft" ? "default" : "secondary"}
                     className="cursor-pointer"
-                    onClick={() => setPost(prev => ({ ...prev, status: "draft" }))}
+                    onClick={() => setStatus("draft")}
                   >
                     Draft
                   </Badge>
                   <Badge 
-                    variant={post.status === "published" ? "default" : "secondary"}
+                    variant={status === "published" ? "default" : "secondary"}
                     className="cursor-pointer"
-                    onClick={() => setPost(prev => ({ ...prev, status: "published" }))}
+                    onClick={() => setStatus("published")}
                   >
                     Published
                   </Badge>
@@ -336,6 +371,7 @@ export default function NewBlogPost() {
           </Card>
         </div>
       </div>
+      )}
     </div>
   )
 }

@@ -7,12 +7,16 @@ import { Badge } from "@/components/ui/badge"
 import { X, ArrowRight, Sparkles } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { waitlistApi } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 export default function FloatingCTA() {
   const [email, setEmail] = useState("")
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [scrollY, setScrollY] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,20 +30,41 @@ export default function FloatingCTA() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoading(true)
+    
     try {
-      const response = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+      const response = await waitlistApi.join({
+        email,
+        ip_address: undefined,
+        user_agent: navigator.userAgent,
+        utm_source: 'floating_cta'
       })
-      
-      if (response.ok) {
-        setIsSubmitted(true)
-        setEmail('')
-        setTimeout(() => setIsSubmitted(false), 3000)
+
+      if (response.error) {
+        toast({
+          title: "Error",
+          description: response.error,
+          variant: "destructive"
+        })
+        return
       }
+
+      setIsSubmitted(true)
+      setEmail('')
+      toast({
+        title: "Success!",
+        description: "You've been added to the waitlist. We'll notify you when we launch."
+      })
+      setTimeout(() => setIsSubmitted(false), 3000)
     } catch (error) {
       console.error('Submit error:', error)
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -80,8 +105,8 @@ export default function FloatingCTA() {
                     placeholder="Enter your email"
                     required
                   />
-                  <Button type="submit" className="w-full" disabled={isSubmitted}>
-                    {isSubmitted ? "You're on the list!" : "Join Waitlist"}
+                  <Button type="submit" className="w-full" disabled={isLoading || isSubmitted}>
+                    {isLoading ? "Adding..." : isSubmitted ? "You're on the list!" : "Join Waitlist"}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </form>
