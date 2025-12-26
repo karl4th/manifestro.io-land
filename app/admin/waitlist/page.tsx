@@ -28,7 +28,7 @@ export default function WaitlistPage() {
     try {
       setLoading(true)
       setError(null)
-      const response = await waitlistApi.getWaitlistEntries(1, 1000) // Get all entries
+      const response = await waitlistApi.getWaitlistEntries(1, 100) // Get all entries
       
       if (response.error) {
         // Check if it's an authentication error
