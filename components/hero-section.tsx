@@ -4,32 +4,52 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Sparkles, Zap, Shield, Brain, Play, Puzzle, Bot, MessageCircle, Send, Globe, Star } from "lucide-react"
-import { motion } from "framer-motion"
+import { ArrowRight, Sparkles, Zap, Shield, Brain, Play, Puzzle, Bot, MessageCircle, Send, Globe, Star, CheckCircle, AlertCircle } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 import MeshGradient from "./mesh-gradient"
 import FloatingOrb from "./floating-orb"
+import { waitlistApi } from "@/lib/api"
 
 export default function HeroSection() {
   const [email, setEmail] = useState("")
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [alertMessage, setAlertMessage] = useState<{ type: 'success' | 'error', message: string } | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoading(true)
+    setAlertMessage(null)
+    
     try {
-      const response = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      })
+      const response = await waitlistApi.join({ email })
       
-      if (response.ok) {
+      if (response.data?.success) {
         setIsSubmitted(true)
         setEmail('')
-        setTimeout(() => setIsSubmitted(false), 3000)
+        setAlertMessage({
+          type: 'success',
+          message: `Поздравляем! Вы успешно добавлены в whitelist. Позиция в очереди: ${response.data.waitlist_entry.queue_position}`
+        })
+        setTimeout(() => {
+          setIsSubmitted(false)
+          setAlertMessage(null)
+        }, 5000)
+      } else {
+        setAlertMessage({
+          type: 'error',
+          message: response.error || 'Произошла ошибка при добавлении в whitelist'
+        })
       }
     } catch (error) {
       console.error('Submit error:', error)
+      setAlertMessage({
+        type: 'error',
+        message: 'Произошла ошибка сети. Попробуйте еще раз.'
+      })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -98,13 +118,37 @@ export default function HeroSection() {
                   className="flex-1 h-14 bg-background/50 backdrop-blur border-border/50 text-base"
                   required
                 />
-                <Button type="submit" size="lg" className="h-14 px-8 rounded-full text-base" disabled={isSubmitted}>
-                  {isSubmitted ? "You're in!" : "Get Started"}
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                <Button type="submit" size="lg" className="h-14 px-8 rounded-full text-base" disabled={isSubmitted || isLoading}>
+                  {isLoading ? "Добавляем..." : isSubmitted ? "Вы в списке!" : "Присоединиться"}
+                  {!isLoading && <ArrowRight className="ml-2 h-5 w-5" />}
                 </Button>
               </div>
             </form>
           </div>
+          
+          <AnimatePresence>
+            {alertMessage && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className={`max-w-2xl mx-auto mb-8 p-4 rounded-lg border ${
+                  alertMessage.type === 'success' 
+                    ? 'bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-200'
+                    : 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  {alertMessage.type === 'success' ? (
+                    <CheckCircle className="h-5 w-5 flex-shrink-0" />
+                  ) : (
+                    <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                  )}
+                  <p className="text-sm font-medium">{alertMessage.message}</p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           
           <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto mb-16">
             <motion.div 
