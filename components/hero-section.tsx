@@ -30,7 +30,7 @@ export default function HeroSection() {
         setEmail('')
         setAlertMessage({
           type: 'success',
-          message: `Поздравляем! Вы успешно добавлены в whitelist. Позиция в очереди: ${response.data.waitlist_entry.queue_position}`
+          message: `Congratulations! You've been successfully added to the whitelist. Queue position: ${response.data.waitlist_entry.queue_position}`
         })
         setTimeout(() => {
           setIsSubmitted(false)
@@ -39,14 +39,14 @@ export default function HeroSection() {
       } else {
         setAlertMessage({
           type: 'error',
-          message: response.error || 'Произошла ошибка при добавлении в whitelist'
+          message: response.error || 'An error occurred while adding to the whitelist'
         })
       }
     } catch (error) {
       console.error('Submit error:', error)
       setAlertMessage({
         type: 'error',
-        message: 'Произошла ошибка сети. Попробуйте еще раз.'
+        message: 'Network error occurred. Please try again.'
       })
     } finally {
       setIsLoading(false)
@@ -119,7 +119,7 @@ export default function HeroSection() {
                   required
                 />
                 <Button type="submit" size="lg" className="h-14 px-8 rounded-full text-base" disabled={isSubmitted || isLoading}>
-                  {isLoading ? "Добавляем..." : isSubmitted ? "Вы в списке!" : "Присоединиться"}
+                  {isLoading ? "Adding..." : isSubmitted ? "You're in!" : "Get Started"}
                   {!isLoading && <ArrowRight className="ml-2 h-5 w-5" />}
                 </Button>
               </div>
